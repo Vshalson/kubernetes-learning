@@ -61,6 +61,106 @@ Here Kubernetes entered, it helps developers to deploy apps themselves and Opera
 		`kubectl get svc`
 
 Minikube not support LoadBalancer Services, so there will be no external IP.
+Using Minikube, get the IP and Port through which we can access the service.
+`minikube service kubia-http`
+
+## Horizontal scalling the application
+
+Get pod details by deployment
+1. Get pod details by deployment
+	`kubectl get deploy`
+2. Scale up number of replicas of pod
+	`kubectl scale deploy kubia --replicas=3`
+	- Check result from step 1.
+	`kubectl get pods`
+3. Display the Pod IP and Pods Node
+	`kubectl get pods -o wide`
+4. Access Dashboard using Minikube
+	`minikube dashboard`
+5. Yaml descriptor for pod
+	Create file kubia-manual.yaml
+	```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-manual
+spec:
+  containers:
+  - image: legend001/kubia
+    name: kubia
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+	```
+	Type resource of Pod, single container on kubia image and listen on port 8080
+6. Create pod from yaml file
+	`kubectl create -f kubia-manual.yaml`
+	Here `kubectl create -f` used to create any resource from yaml or json
+
+7. Forward a local Network to a port in POD, used when you want to talk to specific pod without going through service(for debugging or other reason)
+	`kubia port-forward kubia-manual 8888:8888`
+
+## Labels
+
+Organize Pods and all other kubernetes object through labels. Labels are key-value pair attached to resource.
+	Specify label when creating pod ++ {metadata: |-> labels: |-> creation_method: manual env:prod}
+	```bash
+	# List all labels
+	kubcetl get po --show-labels
+
+	# List specific labels using -L
+	kubectl get po -L creation_method,env
+
+	# Adding labels to exisitng pods
+	kubectl label po kubia-manual creation_method=manual
+
+	# Modifying labels to existing pods(Use --overwrite flag)
+	kubectl label po kubia-manual-v2 env=debug --overwrite
+
+	# List pods using label selector (focus on manual)
+	kubectl get po -l creation_method=manual
+
+	# List pods don't have specific label (here `env` label)
+	kubectl get po -l '!env`
+	```
+
+## Namespace to group resources
+Labels organize pods & objects in group but each object have multiple label, those can overlap, Namespaces enable to separate resources that don't belong together into nonoverlapping groups.
+
+1. List namespaces
+	`kubectl get ns`
+2. List pods under specific namespace
+	`kubectl get po -n kube-system`
+3. Create namespace
+	First create a file : custom-namespace.yaml
+	```yaml
+	apiVersion: v1
+	kind: Namespace
+	metadata:
+		name: custom-namespace
+	```
+	`kubectl create -f custom-namespace.yaml`
+4. Manage object in namespace
+	`kubectl create -f kubia-manual.yaml -n custom-namespace`
+5. Thought on namespace 
+	Namespace allow to isolate objects into groups which allow to operate on those specific namespace but it's not compulsory to provide network isolation.. you can achieve using some networking solution.
+6. Deleting pods
+	```bash
+	# Delete pod by name
+	kubectl delete po kubia-manual
+	# Delete pod by label , label selector and namespace
+	kubectl delete po kubia-manual
+	kubectl delete po -l creation_method=manual
+	kubectl delete ns custom-namespace
+	# Delete all pods
+	kubectl delete po --all
+	# But above comamnd doesn't delete all resource as `kubectl run` launch `ReplicationController`  that create pods as soon as any pod deleted.
+	# Delete everything
+	kubectl delete all --all
+	```
+
+
+
 
 
 
