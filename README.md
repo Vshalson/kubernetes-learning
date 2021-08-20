@@ -80,17 +80,17 @@ Get pod details by deployment
 5. Yaml descriptor for pod
 	Create file kubia-manual.yaml
 	```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: kubia-manual
-spec:
-  containers:
-  - image: legend001/kubia
-    name: kubia
-    ports:
-    - containerPort: 8080
-      protocol: TCP
+	apiVersion: v1
+	kind: Pod
+	metadata:
+	name: kubia-manual
+	spec:
+	containers:
+	- image: legend001/kubia
+		name: kubia
+		ports:
+		- containerPort: 8080
+		protocol: TCP
 	```
 	Type resource of Pod, single container on kubia image and listen on port 8080
 6. Create pod from yaml file
@@ -104,32 +104,36 @@ spec:
 
 Organize Pods and all other kubernetes object through labels. Labels are key-value pair attached to resource.
 	Specify label when creating pod ++ {metadata: |-> labels: |-> creation_method: manual env:prod}
-	```bash
-	# List all labels
-	kubcetl get po --show-labels
+	
 
-	# List specific labels using -L
-	kubectl get po -L creation_method,env
+```bash
+# List all labels
+kubcetl get po --show-labels
 
-	# Adding labels to exisitng pods
-	kubectl label po kubia-manual creation_method=manual
+# List specific labels using -L
+kubectl get po -L creation_method,env
 
-	# Modifying labels to existing pods(Use --overwrite flag)
-	kubectl label po kubia-manual-v2 env=debug --overwrite
+# Adding labels to exisitng pods
+kubectl label po kubia-manual creation_method=manual
 
-	# List pods using label selector (focus on manual)
-	kubectl get po -l creation_method=manual
+# Modifying labels to existing pods(Use --overwrite flag)
+kubectl label po kubia-manual-v2 env=debug --overwrite
 
-	# List pods don't have specific label (here `env` label)
-	kubectl get po -l '!env`
-	```
+# List pods using label selector (focus on manual)
+kubectl get po -l creation_method=manual
+
+# List pods don't have specific label (here `env` label)
+kubectl get po -l '!env`
+```
 
 ## Namespace to group resources
 Labels organize pods & objects in group but each object have multiple label, those can overlap, Namespaces enable to separate resources that don't belong together into nonoverlapping groups.
 
 1. List namespaces
+
 	`kubectl get ns`
 2. List pods under specific namespace
+
 	`kubectl get po -n kube-system`
 3. Create namespace
 	First create a file : custom-namespace.yaml
@@ -141,6 +145,7 @@ Labels organize pods & objects in group but each object have multiple label, tho
 	```
 	`kubectl create -f custom-namespace.yaml`
 4. Manage object in namespace
+
 	`kubectl create -f kubia-manual.yaml -n custom-namespace`
 5. Thought on namespace 
 	Namespace allow to isolate objects into groups which allow to operate on those specific namespace but it's not compulsory to provide network isolation.. you can achieve using some networking solution.
